@@ -7,11 +7,16 @@ import { addItem } from './CartSlice';
 function ProductList({ onHomeClick }) {
     const [showCart, setShowCart] = useState(false);
     const [showPlants, setShowPlants] = useState(false); // State to control the visibility of the About Us page
-    const [isDisabled, setIsDisabled] = useState(false);
-
+    
+    const [isDisabledIds, setIsDisabledIds] = useState([]); // State to track disabled button IDs
    const cart = useSelector(state => state.cart.items);
     const dispatch = useDispatch();
    const calculateTotalQuantity = () => { return cart ? cart.reduce((total, item) => total + item.quantity, 0) : 0; };
+
+    useEffect(() => {
+        const disabled = cart.filter(item => item.quantity >= 1).map(item => item.name);
+        setIsDisabledIds(disabled);
+    }, [cart]);
 
     const plantsArray = [
         {
@@ -262,16 +267,7 @@ function ProductList({ onHomeClick }) {
     };
 
      const handleAddItem = (plant) => {
-
         dispatch(addItem(plant));
-        calculateTotalQuantity();
-        //console.log(calculateTotalQuantity());
-        //console.log(cart);
-        const existingItem = cart.find(item => item.name === plant.name);
-        //console.log(existingItem);
-        if (existingItem && existingItem.quantity >= 1) {
-            setIsDisabled(true); // Disable the button if the item is already in the cart
-        }
     }
 
     
@@ -351,7 +347,7 @@ function ProductList({ onHomeClick }) {
                       <button
                         className="product-button"
                         onClick={() => handleAddItem(plant)}
-                        disabled={isDisabled? true : false}
+                        disabled={isDisabledIds.includes(plant.name)}
                       >
                         Add to Cart
                       </button>
